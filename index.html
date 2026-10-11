@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Donghwan Yun · Data Science</title>
+<meta name="description" content="Selected data science work by Donghwan (Kyle) Yun: recommendation, churn modeling and causal measurement in iGaming.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single reading column of case studies; each case is a ledger row with a chart on the right at desktop width. */
+:root {
+  --bg: #F4F5F2; --panel: #FFFFFF; --ink: #15201B; --muted: #5A6660; --line: #D9DDD8;
+  --pitch: #1E7A4E; --pitch-soft: #DCEDE3; --amber: #B7791F; --amber-soft: #F4E7D0; --slate: #8C97A0;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101613; --panel: #17201B; --ink: #E7ECE8; --muted: #9AA7A0; --line: #2A3530;
+  --pitch: #4FBF86; --pitch-soft: #1B3328; --amber: #E0A54A; --amber-soft: #3A2D18; --slate: #73808A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #101613; --panel: #17201B; --ink: #E7ECE8; --muted: #9AA7A0; --line: #2A3530;
+  --pitch: #4FBF86; --pitch-soft: #1B3328; --amber: #E0A54A; --amber-soft: #3A2D18; --slate: #73808A; color-scheme: dark }
+
+* { box-sizing: border-box }
+html { -webkit-text-size-adjust: 100% }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--body); padding-inline: 20px; padding-block: 40px 72px }
+.wrap { max-width: 1060px; margin: 0 auto; display: grid; gap: 56px }
+a { color: var(--pitch); text-underline-offset: 3px }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; margin: 0; text-wrap: balance; letter-spacing: -0.01em }
+h1 { font-size: clamp(40px, 7vw, 76px); line-height: .95; font-weight: 800 }
+h2 { font-size: clamp(24px, 3.2vw, 32px); line-height: 1.1; font-weight: 800 }
+h3 { font-size: 15px; font-family: var(--mono); font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+p { margin: 0; max-width: 66ch }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums }
+header { display: grid; gap: 22px; padding-bottom: 32px; border-bottom: 2px solid var(--ink) }
+.role { font-size: clamp(18px, 2.2vw, 22px); color: var(--muted); max-width: 46ch }
+.role b { color: var(--ink); font-weight: 600 }
+.links { display: flex; flex-wrap: wrap; gap: 10px 22px; font-family: var(--mono); font-size: 14px }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); background: var(--panel) }
+.facts div { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 2px; min-width: 0 }
+.facts div:last-child { border-right: 0 }
+.facts .v { font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1.1 }
+.facts .k { font-size: 13px; color: var(--muted) }
+.intro { display: grid; gap: 14px }
+nav.toc { display: flex; flex-wrap: wrap; gap: 8px }
+nav.toc a { font: 500 13px var(--mono); text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--panel); padding: 6px 10px; border-radius: 2px }
+nav.toc a:hover { border-color: var(--pitch); color: var(--pitch) }
+.case { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 28px 40px; padding-top: 28px; border-top: 1px solid var(--line) }
+.case .text { display: grid; gap: 14px; align-content: start; min-width: 0 }
+.case .meta { font: 500 13px var(--mono); color: var(--muted); letter-spacing: .02em }
+.case dl { display: grid; gap: 10px; margin: 0 }
+.case dt { font: 500 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--pitch) }
+.case dd { margin: 0 }
+.result { font-weight: 600 }
+.figure { background: var(--panel); border: 1px solid var(--line); padding: 18px 18px 12px; align-self: start; min-width: 0; display: grid; gap: 10px }
+.figure .cap { font-size: 13px; color: var(--muted) }
+.figure svg { width: 100%; height: auto; display: block }
+svg text { fill: var(--muted); font: 12px var(--mono) }
+svg .lbl { fill: var(--ink); font: 500 13px var(--body) }
+svg .val { fill: var(--ink); font: 600 12px var(--mono) }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
+.stat { border-left: 3px solid var(--pitch); padding: 4px 0 4px 12px; display: grid }
+.stat.amber { border-color: var(--amber) }
+.stat .v { font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1.05 }
+.stat .k { font-size: 13px; color: var(--muted) }
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px }
+.how div { background: var(--panel); border: 1px solid var(--line); padding: 16px; display: grid; gap: 8px; align-content: start }
+.how b { font-family: var(--display); font-stretch: 85%; font-size: 19px }
+footer { border-top: 2px solid var(--ink); padding-top: 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--muted) }
+
+.figs { display: grid; gap: 14px; align-self: start; min-width: 0 }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px }
+.flow .step { font-size: 13px; border: 1px solid var(--line); background: var(--bg); padding: 6px 9px; border-radius: 2px }
+.flow .step.hot { border-color: var(--pitch); color: var(--pitch); font-weight: 600 }
+.flow .step.warn { border-color: var(--amber); color: var(--amber) }
+.flow .arr { color: var(--slate); font-family: var(--mono) }
+.flowlbl { font: 500 12px var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
+@media (max-width: 860px) {
+  .case { grid-template-columns: 1fr }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+  .facts div:nth-child(2) { border-right: 0 }
+  .facts div:nth-child(-n+2) { border-bottom: 1px solid var(--line) }
+  .how { grid-template-columns: 1fr }
+}
+@media (prefers-reduced-motion: no-preference) { .bar { transition: width .6s ease } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h3>Data Scientist · iGaming</h3>
+  <h1>Donghwan (Kyle) Yun</h1>
+  <p class="role">I build <b>recommendation, churn and measurement models</b> for sportsbook and poker products, and I check every number against the source before anyone acts on it.</p>
+  <div class="links">
+    <a href="mailto:yun090914@gmail.com">yun090914@gmail.com</a>
+    <span>Manila, Philippines · open to remote</span>
+    <a id="gh" href="https://github.com/stanley0321">github.com/stanley0321</a>
+  </div>
+  <div class="facts">
+    <div><span class="v">8+ yrs</span><span class="k">in data, last 3 in iGaming</span></div>
+    <div><span class="v">2</span><span class="k">operators: ArenaPlus (sportsbook), GGPoker</span></div>
+    <div><span class="v">KAIST</span><span class="k">M.S. Management Engineering</span></div>
+    <div><span class="v">Daily</span><span class="k">AI agents in my build and review loop</span></div>
+  </div>
+</header>
+
+<section class="intro">
+  <h2>Selected work</h2>
+  <p>Six projects, most recent first. Each one states the question, what I built, what came out, and what I would do differently. Company figures are shown as rates and ratios; absolute revenue stays with the employer.</p>
+  <nav class="toc" aria-label="Case studies">
+    <a href="#recsys">League recommender</a><a href="#churn">High-value churn</a><a href="#causal">Campaign measurement</a>
+    <a href="#betslip">Betslip in live scores</a><a href="#gg">Poker CRM personalization</a><a href="#kida">Text early warning</a>
+  </nav>
+</section>
+
+<article class="case" id="recsys">
+  <div class="text">
+    <div class="meta">ArenaPlus (DigiPlus) · 2026 · Python, implicit, scikit-learn, MaxCompute SQL</div>
+    <h2>Which league will a player bet next?</h2>
+    <dl>
+      <dt>Question</dt><dd>Recommend sports leagues to active sportsbook players from twelve months of bets across two sportsbook vendors, and use the same scores to pick promotion targets.</dd>
+      <dt>What I built</dt><dd>Implicit-feedback ALS (library and a from-scratch NumPy solver), four baselines including same-season-last-year popularity, a time-split evaluation with a one-month gap, NDCG@K and paired bootstrap intervals. I mapped every match to its league through the vendor API and reconciled the extract to the warehouse within 1% for 25 of 26 vendor-months.</dd>
+      <dt>Result</dt><dd class="result">Twelve-month popularity beat ALS (NDCG@10 0.618 vs 0.402). The training window ended in the NBA off-season, and ALS ranks a player's taste share, not their betting volume. Blending ALS with each player's history kept most of the accuracy and widened catalogue coverage from 0.1% to 16%.</dd>
+      <dt>Next</dt><dd>A count objective (Poisson factorization or BPR) and a league-by-month season prior. I pre-registered predictions before training; I got 0 of 11 right, which is why I write them down.</dd>
+    </dl>
+  </div>
+  <div class="figs"><div class="figure"><div class="cap">NDCG@10 on October bets, held-out month</div><div id="fig-recsys"></div></div><div class="figure"><div class="cap">The season trap: monthly bettors per league, each league's peak = 100. Training ends in August; October is the test month.</div><div id="fig-season"></div></div></div>
+</article>
+
+<article class="case" id="churn">
+  <div class="text">
+    <div class="meta">ArenaPlus (DigiPlus) · 2026 · scikit-learn gradient boosting, logistic regression</div>
+    <h2>Who among the high-value players stops next month?</h2>
+    <dl>
+      <dt>Question</dt><dd>Flag players with large recent volume who will place no bet in the next 30 days, early enough for a retention offer.</dd>
+      <dt>What I built</dt><dd>Fifteen monthly snapshots with 30 behavioral features from bets, deposits and withdrawals; trained on earlier months, tuned on August, tested once on September. Compared against the rule the CRM team already used: days since the last bet.</dd>
+      <dt>Result</dt><dd class="result">AUC 0.91 and 5.8× lift in the top decile, which holds 58% of next month's churners. The simple recency rule was already strong (AUC 0.88); the model's gain is real but modest, +11% PR-AUC. Probabilities are well calibrated, and results held when I removed the two months hit by the August 2025 e-wallet regulation shock.</dd>
+      <dt>Next</dt><dd>Score uplift, not risk: the players worth an offer are the ones the offer changes.</dd>
+    </dl>
+  </div>
+  <div class="figs"><div class="figure"><div class="cap">Test month (Sep 2026): share of churners caught by the riskiest k% of players</div><div id="fig-churn"></div>
+    <div class="stats"><div class="stat"><span class="v">0.911</span><span class="k">AUC, gradient boosting</span></div><div class="stat amber"><span class="v">0.885</span><span class="k">AUC, days-since-last-bet rule</span></div></div>
+  </div><div class="figure"><div class="cap">Calibration on the test month: predicted vs observed churn, by risk decile</div><div id="fig-calib"></div></div><div class="figure"><div class="cap">What drives the score: drop in test AUC when each feature is shuffled</div><div id="fig-imp"></div></div></div>
+</article>
+
+<article class="case" id="causal">
+  <div class="text">
+    <div class="meta">ArenaPlus (DigiPlus) · 2025–2026 · difference-in-differences, holdouts, MaxCompute SQL</div>
+    <h2>Measuring CRM campaigns without fooling ourselves</h2>
+    <dl>
+      <dt>Question</dt><dd>Campaign reports compared players who redeemed a bonus with players who did not, which credits the bonus with whatever made those players active in the first place.</dd>
+      <dt>What I built</dt><dd>A 10% randomized holdout for every lifecycle campaign, stratified by turnover, GGR and deposits; and for older campaigns, a triple-difference design that uses a product the bonus cannot touch as a placebo.</dd>
+      <dt>Result</dt><dd class="result">Engagement selection explained 79% of the naive lift; the corrected return was 1.34× instead of 2.98×. The churn-prevention offer worked only where risk was high, and the effect fell to zero as activity rose. The redesigned program became the standard way the team reads every lifecycle campaign.</dd>
+    </dl>
+  </div>
+  <div class="figs"><div class="figure"><div class="cap">Holdout design used on every lifecycle campaign</div><div class="flowlbl">Each send</div><div class="flow"><span class="step">Eligible players</span><span class="arr">→</span><span class="step">Stratify by turnover, GGR, deposits</span><span class="arr">→</span><span class="step hot">90% get the offer</span><span class="arr">→</span><span class="step warn">10% holdout</span><span class="arr">→</span><span class="step">Compare at D7 and D30</span></div></div><div class="figure"><div class="cap">Return on a slots campaign: naive comparison vs triple difference</div><div id="fig-naive"></div></div><div class="figure"><div class="cap">Churn-prevention effect by prior activity days (percentage points)</div><div id="fig-causal"></div></div></div>
+</article>
+
+<article class="case" id="betslip">
+  <div class="text">
+    <div class="meta">ArenaPlus × LiveMatch · 2026 · funnel sizing, scenario analysis</div>
+    <h2>Should the live-score app carry its own betslip?</h2>
+    <dl>
+      <dt>Question</dt><dd>Industry reports on in-stream and embedded betting suggested that removing the hop from our live-score app to the sportsbook would lift conversion. I proposed it and sized it before anyone built it.</dd>
+      <dt>What I built</dt><dd>The current funnel from deep-link clicks to a bet within a day, and three scenarios taken from published cases: +5–10% (betslip redesign), +30–40% (fewer app switches), and 2× as a ceiling (streaming studies with self-selection).</dd>
+      <dt>Result</dt><dd class="result">About a third of clickers already bet within a day. Even the base case adds little in absolute terms, because deep-link clicks fell by about three quarters from June to September. Traffic was the constraint, not friction. I recommended a split test on match pages and a traffic fix before engineering work.</dd>
+    </dl>
+  </div>
+  <div class="figs"><div class="figure"><div class="cap">What the embed removes</div><div class="flowlbl">Today</div><div class="flow"><span class="step">Live match page</span><span class="arr">→</span><span class="step">Tap link</span><span class="arr">→</span><span class="step warn">Sportsbook opens</span><span class="arr">→</span><span class="step warn">Log in, find the match</span><span class="arr">→</span><span class="step">Betslip</span><span class="arr">→</span><span class="step hot">Bet</span></div><div class="flowlbl">Proposed</div><div class="flow"><span class="step">Live match page</span><span class="arr">→</span><span class="step hot">Betslip on the page</span><span class="arr">→</span><span class="step hot">Bet</span></div></div><div class="figure"><div class="cap">Deep-link clickers (index, June = 100) and the scenario range for post-click conversion</div><div id="fig-betslip"></div></div></div>
+</article>
+
+<article class="case" id="gg">
+  <div class="text">
+    <div class="meta">NSUSLAB (GGPoker) · 2023–2025 · Optimove, Snowflake, Tableau, SQL</div>
+    <h2>Personalized win-back for a global poker room</h2>
+    <dl>
+      <dt>Question</dt><dd>Blanket reactivation offers paid players who were coming back anyway and attracted bonus hunters.</dd>
+      <dt>What I built</dt><dd>Segments by inactivity, lifetime value, preferred format (tournaments, cash, Spin &amp; Gold) and region, launched and A/B tested in Optimove; a daily cherry-picker screen with three rules (cost-to-value ratio, post-campaign activity, shared IPs); reporting moved to Optimove Datashare, Snowflake and Tableau.</dd>
+      <dt>Result</dt><dd class="result">The pilot personalized reactivation returned 3.1× its cost. CRM-driven GGR grew 25% year over year. Players with a past big win returned at a higher rate, which became its own win-back segment. Automated reporting removed four days of manual work per cycle.</dd>
+    </dl>
+  </div>
+  <div class="figs"><div class="figure"><div class="cap">How a target list was built</div><div class="flowlbl">Segment on</div><div class="flow"><span class="step">Weeks inactive</span><span class="arr">→</span><span class="step">Lifetime value</span><span class="arr">→</span><span class="step">Preferred format</span><span class="arr">→</span><span class="step">Region</span></div><div class="flowlbl">Then</div><div class="flow"><span class="step">Eligible list</span><span class="arr">→</span><span class="step warn">Remove cherry pickers (3 rules)</span><span class="arr">→</span><span class="step hot">Personalized offer</span><span class="arr">→</span><span class="step">A/B test in Optimove</span></div></div><div class="figure"><div class="cap">Pilot outcomes</div>
+    <div class="stats"><div class="stat"><span class="v">3.1×</span><span class="k">ROI, personalized reactivation pilot</span></div><div class="stat"><span class="v">+25%</span><span class="k">GGR year over year</span></div><div class="stat amber"><span class="v">3 rules</span><span class="k">to keep bonus hunters out of every target list</span></div><div class="stat amber"><span class="v">4 days</span><span class="k">of reporting work automated</span></div></div>
+  </div></div>
+</article>
+
+<article class="case" id="kida">
+  <div class="text">
+    <div class="meta">Korea Institute for Defense Analyses · 2020–2023 · text mining, RNN</div>
+    <h2>Does state media signal a provocation in advance?</h2>
+    <dl>
+      <dt>Question</dt><dd>Whether the language of North Korea's official newspaper changes in the week before military provocations.</dd>
+      <dt>What I built</dt><dd>A two-stage text-mining pipeline over the full text of Rodong Sinmun, focused on the seven days before events such as the sinking of the ROKS Cheonan and the shelling of Yeonpyeong Island; a provocation vocabulary checked with subject-matter experts; and an RNN that models word order as well as word frequency.</dd>
+      <dt>Result</dt><dd class="result">80% accuracy on a held-out validation set, and evidence that official language carries observable signals before military action. Earlier text-forecasting work at TMAX BI was published in an SSCI journal.</dd>
+    </dl>
+  </div>
+  <div class="figs"><div class="figure"><div class="cap">Pipeline</div><div class="flowlbl">Steps</div><div class="flow"><span class="step">Rodong Sinmun full text</span><span class="arr">→</span><span class="step">7-day windows before incidents</span><span class="arr">→</span><span class="step">Term frequency and tone</span><span class="arr">→</span><span class="step warn">Expert-checked vocabulary</span><span class="arr">→</span><span class="step hot">RNN over word sequences</span><span class="arr">→</span><span class="step hot">Early-warning score</span></div></div><div class="figure"><div class="cap">Example windows in 2010</div><div id="fig-kida"></div></div><div class="figure"><div class="cap">Approach</div>
+    <div class="stats"><div class="stat"><span class="v">7 days</span><span class="k">of articles before each incident</span></div><div class="stat"><span class="v">80%</span><span class="k">validation accuracy</span></div></div>
+  </div></div>
+</article>
+
+<section class="intro">
+  <h2>How I work</h2>
+  <div class="how">
+    <div><b>Agents in the loop, tests in front</b><p>I use AI coding agents daily to write pipelines test-first and to run an independent code review before results go out. On the recommender, that review caught a deduplication bug before publication.</p></div>
+    <div><b>Reconcile before modeling</b><p>Every extract is checked against the warehouse totals the business already trusts. I report where the numbers disagree and why, before I report anything else.</p></div>
+    <div><b>Say what I expect first</b><p>I write predictions down before a model runs and score them afterwards. It keeps the analysis honest and shows where my intuition about the business is wrong.</p></div>
+  </div>
+</section>
+
+<footer><span>Donghwan (Kyle) Yun · Data Scientist</span><a href="mailto:yun090914@gmail.com">yun090914@gmail.com</a></footer>
+</div>
+
+<script>
+const D = /*DATA*/{
+  season: {"months": ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"], "series": {"NBA": [0, 0, 0, 49, 63, 54, 52, 46, 53, 71, 100, 32, 0, 0, 0, 22], "PBA": [100, 0, 0, 39, 32, 37, 40, 13, 34, 47, 56, 59, 43, 37, 1, 13], "WNBA": [96, 89, 52, 13, 0, 0, 0, 0, 0, 2, 64, 100, 73, 81, 44, 38], "KBL": [0, 0, 0, 100, 93, 93, 92, 85, 97, 90, 46, 0, 0, 0, 0, 45]}},
+  calib: [[0.002, 0.001], [0.002, 0.002], [0.003, 0.001], [0.005, 0.007], [0.011, 0.009], [0.022, 0.021], [0.044, 0.034], [0.088, 0.077], [0.213, 0.192], [0.523, 0.469]],
+  imp: [["Days since last bet", 0.09], ["Active days, last 7", 0.0072], ["Active days, last 30", 0.0071], ["Days since last deposit", 0.0043], ["Active days, last 90", 0.003], ["Tenure", 0.0027], ["Activity trend", 0.0009], ["Stake trend, 14 vs 30 days", 0.0007]],
+  recsys: [["Popular, 12 months", 0.618, 0], ["Same season last year", 0.593, 0], ["Own history", 0.535, 0], ["History + ALS", 0.507, 1], ["ALS", 0.402, 1], ["Popular, last 30 days", 0.305, 0]],
+  churn: {"model": [[0.0, 0.0], [0.05, 0.354], [0.1, 0.576], [0.15, 0.723], [0.2, 0.813], [0.25, 0.873], [0.3, 0.908], [0.35, 0.932], [0.4, 0.95], [0.45, 0.967], [0.5, 0.976], [0.55, 0.984], [0.6, 0.987], [0.65, 0.99], [0.7, 0.995], [0.75, 0.996], [0.8, 0.996], [0.85, 0.998], [0.9, 0.999], [0.95, 0.999], [1.0, 1.0]], "rule": [[0.0, 0.0], [0.05, 0.341], [0.1, 0.558], [0.15, 0.697], [0.2, 0.772], [0.25, 0.824], [0.3, 0.858], [0.35, 0.888], [0.4, 0.914], [0.45, 0.936], [0.5, 0.956], [0.55, 0.961], [0.6, 0.967], [0.65, 0.973], [0.7, 0.974], [0.75, 0.979], [0.8, 0.984], [0.85, 0.988], [0.9, 0.993], [0.95, 0.997], [1.0, 1.0]]},
+  causal: [["1–3 days", 25.0], ["4–9 days", 9.4], ["10–19 days", 2.7], ["20+ days", -0.2]],
+  betslip: {clicks: [["Jun", 100], ["Jul", 46], ["Aug", 25], ["Sep", 24]], scen: [["Redesign cases", 5, 10], ["Fewer app switches", 30, 40], ["Streaming ceiling", 100, 100]]}
+};
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const svg = (w, h, inner, label) => `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">${inner}</svg>`;
+
+function bars(rows, opt) {
+  const W = 520, row = 34, left = opt.left || 170, right = 56, H = rows.length * row + 26;
+  const vals = rows.map((r) => r[1]), lo = Math.min(0, ...vals), hi = Math.max(...vals) * 1.08;
+  const x = (v) => left + ((v - lo) / (hi - lo)) * (W - left - right);
+  let g = "";
+  if (lo < 0) g += `<line x1="${x(0)}" x2="${x(0)}" y1="4" y2="${H - 22}" stroke="var(--slate)"/>`;
+  rows.forEach((r, i) => {
+    const y = i * row + 6, v = r[1], hl = r[2];
+    const x0 = Math.min(x(0), x(v)), w = Math.max(Math.abs(x(v) - x(0)), 1.5);
+    g += `<text class="lbl" x="${left - 10}" y="${y + 17}" text-anchor="end" style="font-weight:${hl ? 600 : 500}">${esc(r[0])}</text>`;
+    g += `<rect x="${x0}" y="${y + 4}" width="${w}" height="18" fill="${hl ? "var(--amber)" : "var(--pitch)"}"/>`;
+    g += `<text class="val" x="${Math.max(x(v), x(0)) + 6}" y="${y + 17}">${opt.fmt(v)}</text>`;
+  });
+  g += `<text x="${left}" y="${H - 6}">${opt.axis || ""}</text>`;
+  return svg(W, H, g, opt.label);
+}
+
+function churnCurve(c) {
+  const W = 520, H = 250, l = 46, r = 16, t = 12, b = 34;
+  const x = (v) => l + v * (W - l - r), y = (v) => H - b - v * (H - t - b);
+  let g = "";
+  [0, .25, .5, .75, 1].forEach((v) => { g += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${l - 8}" y="${y(v) + 4}" text-anchor="end">${v * 100}%</text>`; });
+  [0, .2, .4, .6, .8, 1].forEach((v) => { g += `<text x="${x(v)}" y="${H - 12}" text-anchor="middle">${v * 100}%</text>`; });
+  g += `<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="var(--slate)" stroke-dasharray="4 4"/>`;
+  const path = (pts) => pts.map((p, i) => `${i ? "L" : "M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join("");
+  g += `<path d="${path(c.rule)}" fill="none" stroke="var(--amber)" stroke-width="2.5"/>`;
+  g += `<path d="${path(c.model)}" fill="none" stroke="var(--pitch)" stroke-width="3"/>`;
+  const p10 = c.model.find((p) => Math.abs(p[0] - 0.1) < 1e-9);
+  if (p10) g += `<circle cx="${x(p10[0])}" cy="${y(p10[1])}" r="5" fill="var(--pitch)"/><text class="val" x="${x(p10[0]) + 10}" y="${y(p10[1]) + 14}">top 10% catches ${Math.round(p10[1] * 100)}%</text>`;
+  g += `<rect x="${W - r - 170}" y="${H - b - 46}" width="10" height="10" fill="var(--pitch)"/><text x="${W - r - 154}" y="${H - b - 37}">Gradient boosting</text>`;
+  g += `<rect x="${W - r - 170}" y="${H - b - 28}" width="10" height="10" fill="var(--amber)"/><text x="${W - r - 154}" y="${H - b - 19}">Days-since-last-bet rule</text>`;
+  return svg(W, H, g, "Cumulative share of churners captured by risk rank");
+}
+
+function betslip(b) {
+  const W = 520, H = 244, l = 40, r = 16, t = 28, mid = 250;
+  const x = (i) => l + i * ((mid - l - 20) / 3), y = (v) => t + (1 - v / 100) * 150;
+  let g = `<text x="${l}" y="${H - 8}">Clickers, June = 100</text>`;
+  const idx = b.clicks.map((c) => c[1]);
+  g += `<path d="${idx.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join("")}" fill="none" stroke="var(--amber)" stroke-width="3"/>`;
+  idx.forEach((v, i) => { g += `<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="var(--amber)"/><text class="val" x="${x(i)}" y="${y(v) - 9}" text-anchor="middle">${Math.round(v)}</text><text x="${x(i)}" y="${t + 168}" text-anchor="middle">${b.clicks[i][0]}</text>`; });
+  const sx = mid + 112, max = 115, bw = (v) => (v / max) * (W - r - sx);
+  g += `<text x="${mid + 10}" y="${H - 8}">Post-click conversion uplift</text>`;
+  b.scen.forEach((s, i) => {
+    const yy = t + 16 + i * 46;
+    g += `<text class="lbl" x="${sx - 8}" y="${yy + 13}" text-anchor="end">${esc(s[0])}</text>`;
+    g += `<rect x="${sx}" y="${yy}" width="${Math.max(bw(s[2]), 2)}" height="18" fill="var(--pitch-soft)"/><rect x="${sx}" y="${yy}" width="${Math.max(bw(s[1]), 2)}" height="18" fill="var(--pitch)"/>`;
+    g += `<text class="val" x="${sx + bw(s[2]) + 6}" y="${yy + 13}">+${s[1] === s[2] ? s[1] : s[1] + "–" + s[2]}%</text>`;
+  });
+  return svg(W, H, g, "Deep-link clickers fell by three quarters while embedded-betslip scenarios lift post-click conversion 5 to 100 percent");
+}
+
+document.getElementById("fig-recsys").innerHTML = bars(D.recsys, {fmt: (v) => v.toFixed(3), label: "NDCG@10 by method", axis: "higher is better"});
+document.getElementById("fig-causal").innerHTML = bars(D.causal, {left: 110, fmt: (v) => (v > 0 ? "+" : "") + v.toFixed(1) + "pp", label: "Effect by prior activity days", axis: "players grouped by active days before the campaign"});
+document.getElementById("fig-betslip").innerHTML = betslip(D.betslip);
+if (D.churn) document.getElementById("fig-churn").innerHTML = churnCurve(D.churn);
+
+function seasonChart(S) {
+  const W = 520, H = 230, l = 34, r = 70, t = 12, b = 30, n = S.months.length;
+  const x = (i) => l + (i / (n - 1)) * (W - l - r), y = (v) => t + (1 - v / 100) * (H - t - b);
+  const cols = {NBA: "var(--pitch)", PBA: "var(--amber)", WNBA: "var(--slate)", KBL: "var(--ink)"};
+  const iTrainEnd = S.months.indexOf("2026-08"), iTest = S.months.indexOf("2026-10");
+  let g = `<rect x="${x(iTrainEnd)}" y="${t}" width="${x(iTest) - x(iTrainEnd)}" height="${H - t - b}" fill="var(--amber-soft)"/>`;
+  g += `<text x="${(x(iTrainEnd) + x(iTest)) / 2}" y="${t + 12}" text-anchor="middle">gap, test</text>`;
+  [0, 50, 100].forEach((v) => { g += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${l - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; });
+  S.months.forEach((m, i) => { if (i % 3 === 0 || i === n - 1) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle">${m.slice(2).replace("-", "/")}</text>`; });
+  const order = Object.entries(S.series).sort((a, b) => b[1][n - 1] - a[1][n - 1]);
+  let lastY = -99;
+  order.forEach(([k, vals]) => {
+    g += `<path d="${vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("")}" fill="none" stroke="${cols[k]}" stroke-width="${k === "NBA" ? 3 : 2}"/>`;
+    let ly = Math.max(y(vals[n - 1]) + 4, lastY + 13);
+    lastY = ly;
+    g += `<text class="val" x="${x(n - 1) + 6}" y="${ly}" style="fill:${cols[k]}">${k}</text>`;
+  });
+  return svg(W, H, g, "League popularity by month, indexed to each league's peak");
+}
+
+function calibChart(c) {
+  const W = 520, H = 230, l = 46, r = 16, t = 12, b = 34, mx = 0.6;
+  const x = (v) => l + (v / mx) * (W - l - r), y = (v) => H - b - (v / mx) * (H - t - b);
+  let g = `<line x1="${x(0)}" y1="${y(0)}" x2="${x(mx)}" y2="${y(mx)}" stroke="var(--slate)" stroke-dasharray="4 4"/>`;
+  [0, 0.2, 0.4, 0.6].forEach((v) => {
+    g += `<line x1="${l}" x2="${W - r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${l - 8}" y="${y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`;
+    g += `<text x="${x(v)}" y="${H - 12}" text-anchor="middle">${Math.round(v * 100)}%</text>`;
+  });
+  g += `<path d="${c.map((p, i) => `${i ? "L" : "M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join("")}" fill="none" stroke="var(--pitch)" stroke-width="2.5"/>`;
+  c.forEach((p) => { g += `<circle cx="${x(p[0])}" cy="${y(p[1])}" r="4" fill="var(--pitch)"/>`; });
+  g += `<text x="${W - r}" y="${H - b - 8}" text-anchor="end">predicted, dashed line = perfect</text><text x="${l + 6}" y="${t + 10}">observed</text>`;
+  return svg(W, H, g, "Calibration curve");
+}
+
+function naiveChart() {
+  return bars([["Naive comparison", 2.98, 0], ["Triple difference", 1.34, 1]],
+    {left: 150, fmt: (v) => v.toFixed(2) + "×", label: "Campaign return, naive vs corrected", axis: "engagement selection explained 79% of the naive lift"});
+}
+
+function kidaChart() {
+  const W = 520, H = 120, l = 20, r = 20, mid = 62;
+  const x = (d) => l + (d / 365) * (W - l - r);
+  const ev = [["ROKS Cheonan", 84], ["Yeonpyeong shelling", 326]];
+  let g = `<line x1="${l}" x2="${W - r}" y1="${mid}" y2="${mid}" stroke="var(--line)" stroke-width="2"/>`;
+  ["Jan", "Apr", "Jul", "Oct"].forEach((m, i) => { g += `<text x="${x(i * 91)}" y="${mid + 30}">${m} 2010</text>`; });
+  ev.forEach(([nm, d]) => {
+    g += `<rect x="${x(d - 7)}" y="${mid - 12}" width="${x(d) - x(d - 7)}" height="24" fill="var(--pitch-soft)"/>`;
+    g += `<line x1="${x(d)}" x2="${x(d)}" y1="${mid - 18}" y2="${mid + 18}" stroke="var(--amber)" stroke-width="3"/>`;
+    g += `<text class="lbl" x="${Math.min(x(d), W - r - 70)}" y="${mid - 24}" text-anchor="middle">${nm}</text>`;
+  });
+  g += `<text x="${l}" y="${H - 4}">shaded: the seven days of articles each window reads</text>`;
+  return svg(W, H, g, "2010 incidents with seven-day article windows");
+}
+
+document.getElementById("fig-season").innerHTML = seasonChart(D.season);
+document.getElementById("fig-calib").innerHTML = calibChart(D.calib);
+document.getElementById("fig-imp").innerHTML = bars(D.imp, {left: 200, fmt: (v) => v.toFixed(3), label: "Permutation importance", axis: "AUC drop when shuffled"});
+document.getElementById("fig-naive").innerHTML = naiveChart();
+document.getElementById("fig-kida").innerHTML = kidaChart();
+</script>
+</body>
+</html>
